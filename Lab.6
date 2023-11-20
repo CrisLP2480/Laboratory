@@ -1,38 +1,319 @@
-struct Node* deleteNode(struct Node* root, int val) {
-    if (root == NULL) {
-        return root;
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <math.h>
+#include <limits.h>
+
+struct Node
+{
+  int data;
+  struct Node *left;
+  struct Node *right;
+};
+
+struct Node *
+newNode (int value)
+{
+  struct Node *node = (struct Node *) malloc (sizeof (struct Node));
+  node->data = value;
+  node->left = NULL;
+  node->right = NULL;
+  return node;
+}
+
+int
+height (struct Node *node)
+{
+  if (node == NULL)
+    {
+      return 0;
+    }
+  return 1 + fmax (height (node->left), height (node->right));
+}
+
+void
+InputBT (struct Node *givenNode)
+{
+  int leftValue, rightValue;
+
+  printf ("Enter left child value (or -1 to skip): ");
+  scanf ("%d", &leftValue);
+
+  if (leftValue != -1)
+    {
+      givenNode->left = newNode (leftValue);
+      InputBT (givenNode->left);
     }
 
-    // the value to be deleted is in the left subtree
-    if (val < root->data) {
-        root->left = deleteNode(root->left, val);
+  printf ("Enter right child value (or -1 to skip): ");
+  scanf ("%d", &rightValue);
+
+  if (rightValue != -1)
+    {
+      givenNode->right = newNode (rightValue);
+      InputBT (givenNode->right);
     }
-    // the value to be deleted is in the right subtree
-    else if (val > root->data) {
-        root->right = deleteNode(root->right, val);
-    }
-    // the value is equal to this node's value
-    else {
-        // has only one child or no child
-        if (root->left == NULL) {
-            struct Node* temp = root->right;
-            free(root);
-            return temp;
-        } else if (root->right == NULL) {
-            struct Node* temp = root->left;
-            free(root);
-            return temp;
-        }
+}
 
-        // has two children, get the inorder successor (smallest in the right subtree)
-        struct Node* temp = findMinValueNode(root->right);
+void
+printTree (int **M, struct Node *root, int col, int row, int height)
+{
+  if (root == NULL)
+    return;
+  M[row][col] = root->data;
+  printTree (M, root->left, col - pow (2, height - 2), row + 1, height - 1);
+  printTree (M, root->right, col + pow (2, height - 2), row + 1, height - 1);
+}
 
-        // copy the inorder successor's value to this node
-        root->data = temp->data;
-
-        // delete the inorder successor
-        root->right = deleteNode(root->right, temp->data);
+void
+printTreeStruct(struct Node *root)
+{
+  if (root == NULL)
+    return;
+  int h = height (root);
+  int width = pow (2, height (root));
+  int **M = (int **) malloc (h * sizeof (int *));
+  for (int i = 0; i < h; i++)
+    {
+      M[i] = (int *) calloc (width, sizeof (int));
     }
 
-    return root;
+  printTree (M, root, width / 2, 0, h);
+
+  for (int i = 0; i < h; i++)
+    {
+      for (int j = 0; j < width; j++)
+	{
+	  if (M[i][j] == 0)
+	    printf ("  ");
+	  else
+	    printf ("%d ", M[i][j]);
+	}
+      printf ("\n");
+    }
+}
+
+void
+countLeafNodes (struct Node *node, int *resultLeafNodes)
+{
+
+  if (node == NULL)
+    {
+      return;
+    }
+
+  if (node->left == NULL && node->right == NULL)
+    {
+      *resultLeafNodes = *resultLeafNodes + 1;
+      return;
+    }
+
+  countLeafNodes (node->right, resultLeafNodes);
+
+  countLeafNodes (node->left, resultLeafNodes);
+}
+
+void
+displayInorderTraversal (struct Node *node)
+{
+  if (node == NULL)
+    {
+      return;
+    }
+
+  displayInorderTraversal (node->left);
+
+  printf ("%d ", node->data);
+
+  displayInorderTraversal (node->right);
+}
+
+void
+countTotalNodes (struct Node *node, int *nrOfNodes)
+{
+  if (node == NULL)
+    {
+      return;
+    }
+
+  *nrOfNodes = *nrOfNodes + 1;
+
+  countTotalNodes (node->right, nrOfNodes);
+
+  countTotalNodes (node->left, nrOfNodes);
+
+}
+
+void
+fillArrWithInorderTraversal (struct Node *node, int *arr, int *index)
+{
+  if (node == NULL)
+    {
+      return;
+    }
+
+  fillArrWithInorderTraversal (node->left, arr, index);
+
+  arr[*index] = node->data;
+  (*index)++;
+
+  fillArrWithInorderTraversal (node->right, arr, index);
+}
+
+// check if the array is sorted in ascending order
+void
+checkIfBinaryTreeIsBST (int *arr, int length)
+{
+  for (int i = 0; i < length; i++)
+    {
+      for (int j = 0; j < i; j++)
+	{
+	  if (arr[j] >= arr[i])
+	    {
+	      printf ("\nNot a Binary Search Tree (BST)");
+	      return;
+	    }
+	}
+    }
+
+  printf ("\nYes, it is a Binary Search Tree (BST)");
+}
+
+struct Node *
+findMinValueNode (struct Node *node)
+{
+  struct Node *current = node;
+  while (current->left != NULL)
+    {
+      current = current->left;
+    }
+  return current;
+}
+
+struct Node *
+deleteNode (struct Node *root, int val)
+{
+  if (root == NULL)
+    {
+      return root;
+    }
+
+  // the value to be deleted is in the left subtree
+  if (val < root->data)
+    {
+      root->left = deleteNode (root->left, val);
+    }
+  // the value to be deleted is in the right subtree
+  else if (val > root->data)
+    {
+      root->right = deleteNode (root->right, val);
+    }
+  // the value is equal to this node's value
+  else
+    {
+      // has only one child or no child
+      if (root->left == NULL)
+	{
+	  struct Node *temp = root->right;
+	  free (root);
+	  return temp;
+	}
+      else if (root->right == NULL)
+	{
+	  struct Node *temp = root->left;
+	  free (root);
+	  return temp;
+	}
+
+      // has two children, get the inorder successor (smallest in the right subtree)
+      struct Node *temp = findMinValueNode (root->right);
+
+      // copy the inorder successor's value to this node
+      root->data = temp->data;
+
+      // delete the inorder successor
+      root->right = deleteNode (root->right, temp->data);
+    }
+
+  return root;
+}
+
+
+int
+max (int a, int b)
+{
+  return (a > b) ? a : b;
+}
+
+int
+isBalanced (struct Node *node)
+{
+  if (node == NULL)
+    {
+      return 1;
+    }
+
+  int leftHeight = height (node->left);
+  int rightHeight = height (node->right);
+
+  // Check the difference of left and right subtrees
+  return (abs (leftHeight - rightHeight) <= 1) && isBalanced (node->left)
+    && isBalanced (node->right);
+}
+
+int
+main ()
+{
+  int num;
+  printf ("Input Binary Tree with integers\nRoot: ");
+  scanf ("%d", &num);
+  struct Node *root = newNode (num);
+  InputBT (root);
+
+  // mandatory task
+  printf ("\nBinary Tree:\n");
+  printTreeStruct
+ (root);
+
+  // easy task 1
+  int resultHeight = height (root);
+  printf ("\nHeight: %d", resultHeight);
+
+  // easy task 2
+  int resultLeafNodes = 0;
+  countLeafNodes (root, &resultLeafNodes);
+  printf ("\nLeaf Nodes: %d", resultLeafNodes);
+
+  // easy task 3
+  printf ("\nIn-order traversal: ");
+  displayInorderTraversal (root);
+
+  // easy task 4
+  int nrOfNodes = 0;
+  countTotalNodes (root, &nrOfNodes);
+  int arrOfInorderTraversal[nrOfNodes];
+  int index = 0;
+  fillArrWithInorderTraversal (root, arrOfInorderTraversal, &index);
+  checkIfBinaryTreeIsBST (arrOfInorderTraversal, nrOfNodes);
+
+
+  // medium task 2
+  int val;
+  printf ("\nDelete Node with value: ");
+  scanf ("%d", &val);
+  root = deleteNode (root, val);
+  printTreeStruct
+ (root);
+
+  // medium task 3
+  if (isBalanced (root))
+    {
+      printf ("\nBinary tree is balanced\n");
+    }
+  else
+    {
+      printf ("\nBinary tree is not balanced\n");
+    }
+
+  return 0;
 }
