@@ -66,7 +66,7 @@ printTree (int **M, struct Node *root, int col, int row, int height)
 }
 
 void
-printTreeStruct(struct Node *root)
+printTreeStruct (struct Node *root)
 {
   if (root == NULL)
     return;
@@ -161,7 +161,7 @@ fillArrWithInorderTraversal (struct Node *node, int *arr, int *index)
 }
 
 // check if the array is sorted in ascending order
-void
+bool
 checkIfBinaryTreeIsBST (int *arr, int length)
 {
   for (int i = 0; i < length; i++)
@@ -171,12 +171,13 @@ checkIfBinaryTreeIsBST (int *arr, int length)
 	  if (arr[j] >= arr[i])
 	    {
 	      printf ("\nNot a Binary Search Tree (BST)");
-	      return;
+	      return false;
 	    }
 	}
     }
 
   printf ("\nYes, it is a Binary Search Tree (BST)");
+  return true;
 }
 
 struct Node *
@@ -272,8 +273,7 @@ main ()
 
   // mandatory task
   printf ("\nBinary Tree:\n");
-  printTreeStruct
- (root);
+  printTreeStruct (root);
 
   // easy task 1
   int resultHeight = height (root);
@@ -294,16 +294,23 @@ main ()
   int arrOfInorderTraversal[nrOfNodes];
   int index = 0;
   fillArrWithInorderTraversal (root, arrOfInorderTraversal, &index);
-  checkIfBinaryTreeIsBST (arrOfInorderTraversal, nrOfNodes);
+  bool treecheck = checkIfBinaryTreeIsBST (arrOfInorderTraversal, nrOfNodes);
 
 
   // medium task 2
-  int val;
-  printf ("\nDelete Node with value: ");
-  scanf ("%d", &val);
-  root = deleteNode (root, val);
-  printTreeStruct
- (root);
+  if (treecheck == true)
+    {
+      int val;
+      printf ("\nDelete Node with value: ");
+      scanf ("%d", &val);
+      root = deleteNode (root, val);
+      printTreeStruct (root);
+    }
+  else
+    {
+      printf ("\nCan't be deleted any node");
+    }
+
 
   // medium task 3
   if (isBalanced (root))
