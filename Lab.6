@@ -20,16 +20,16 @@ newNode (int value)
   return node;
 }
 
-int
-height (struct Node *node)
-{
-  if (node == NULL)
-    {
-      return 0;
-    }
-  return 1 + fmax (height (node->left), height (node->right));
-}
+int height(struct Node *node) {
+  if (node == NULL) {
+    return 0;
+  }
 
+  int leftHeight = height(node->left);
+  int rightHeight = height(node->right);
+
+  return 1 + ((leftHeight > rightHeight) ? leftHeight : rightHeight);
+}
 void
 InputBT (struct Node *givenNode)
 {
@@ -257,8 +257,7 @@ isBalanced (struct Node *node)
   int rightHeight = height (node->right);
 
   // Check the difference of left and right subtrees
-  return (abs (leftHeight - rightHeight) <= 1) && isBalanced (node->left)
-    && isBalanced (node->right);
+  return (abs (leftHeight - rightHeight) <= 1) ;
 }
 
 int
@@ -307,7 +306,7 @@ main ()
     }
   else
     {
-      printf ("\nCan't be deleted any node");
+      printf ("\nCan't delete any node since its not BST");
     }
 
 
