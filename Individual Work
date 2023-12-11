@@ -1,1 +1,161 @@
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
+#include "time.h"
+#include <graphics.h>
+#define NUM_LEVELS 6
+void enterCustomWord(char customWord[]) {
+    printf("Enter a custom word (max 50 characters): ");
+    scanf("%s" ,customWord);
+}
 
+void drawNecessaryPart(int numLives) {
+    switch (numLives) {
+        case 5:
+            circle(100, 75, 20); // head
+            break;
+        case 4:
+            line(100, 95, 100, 150); // body
+            break;
+        case 3:
+            line(100, 95, 75, 120); // left arm
+            break;
+        case 2:
+            line(100, 95, 125, 120); // right arm
+            break;
+        case 1:
+            line(100, 150, 75, 175); // left leg
+            break;
+    }
+}
+
+
+int main() {
+    srand(time(NULL));
+
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+
+    char guessWords[NUM_LEVELS][6][50] = {
+        {"green", "yellow", "purple", "sunflower", "ocean", "butterfly"},
+        {"cabbage", "apple", "potato", "banana", "orange", "grape"},
+        {"reflex", "robot", "machine", "computer", "algorithm", "programming"},
+        {"wizard", "magic", "wand", "sorcerer", "enchantment", "spellbound"},
+        {"carrera", "mustang", "aventador", "bugatti", "lamborghini", "porsche"},
+    };
+
+    char hintWords[NUM_LEVELS][6][50] = {
+        {"Color of grass", "Color of the sun", "A mix of red and blue", "A bright yellow flower", "A large body of water", "An insect with colorful wings"},
+        {"Leafy vegetable", "A common fruit", "Starchy tuber", "A yellow fruit", "A citrus fruit", "A small, sweet fruit"},
+        {"Quick reaction", "Automated system", "Complex apparatus", "Electronic device", "Step-by-step procedure", "Coding and problem-solving"},
+        {"Magical person", "Supernatural power", "Magical tool", "A magical practitioner", "The act of enchanting", "Under a magical spell"},
+        {"High-end sports car", "Iconic American muscle car", "Luxury supercar", "High-performance sports car", "Exotic sports car", "German sports car brand"},
+    };
+
+    int numLives = 6;
+    int level = 0;
+
+    while (level < NUM_LEVELS) {
+        line(50, 20, 50, 200);  // pole base
+        line(50, 20, 100, 20);  // pole upper stick
+        line(100, 20, 100, 55); // rope/noose
+
+        int randomIndex = rand() % 6;
+
+        int lengthOfWord = strlen(guessWords[level][randomIndex]);
+
+        int letterGuessed[16] = {0};
+        int numCorrect = 0;
+
+        int loopIndex = 0;
+        int reguessed = 0;
+        char guess[16];
+        char letterEntered;
+
+        printf("\n\nLevel %d (hint: %s)\n", level + 1, hintWords[level][randomIndex]);
+
+        printf("1. Start Level\n2. Enter Custom Word\nChoose an option: ");
+        int choice;
+        scanf("%d%*c", &choice);
+
+        switch (choice) {
+            case 1:
+                break;
+            case 2:
+                enterCustomWord(guessWords[level][randomIndex]);
+                lengthOfWord = strlen(guessWords[level][randomIndex]);
+                break;
+            default:
+                printf("Invalid choice. Defaulting to Level %d\n", level + 1);
+        }
+
+        while (numCorrect < lengthOfWord) {
+            printf("\nHangman Word:");
+
+            for (loopIndex = 0; loopIndex < lengthOfWord; loopIndex++) {
+                if (letterGuessed[loopIndex] == 1) {
+                    printf("%c", guessWords[level][randomIndex][loopIndex]);
+                } else {
+                    printf("_ ");
+                }
+            }
+
+            printf("\n");
+
+            printf("Number Correct So Far:%d\n", numCorrect);
+            printf("Enter a guess letter:");
+            scanf("%s", guess);
+
+            letterEntered = guess[0];
+            reguessed = 0;
+
+            int oldCorrect = numCorrect;
+
+            for (loopIndex = 0; loopIndex < lengthOfWord; loopIndex++) {
+                if (letterGuessed[loopIndex] == 1) {
+                    if (guessWords[level][randomIndex][loopIndex] == letterEntered) {
+                        reguessed = 1;
+                        break;
+                    }
+                    continue;
+                }
+
+                if (letterEntered == guessWords[level][randomIndex][loopIndex]) {
+                    letterGuessed[loopIndex] = 1;
+                    numCorrect++;
+                }
+            }
+
+            if (oldCorrect == numCorrect && reguessed == 0) {
+                numLives--;
+                drawNecessaryPart(numLives);
+                printf("Sorry, wrong guess\n");
+                if (numLives == 0) {
+                    break;
+                }
+            } else if (reguessed == 1) {
+                printf("Already Guessed!!\n");
+            } else {
+                printf("Correct guess :)\n");
+            }
+        }
+
+        if (numLives == 0) {
+            cleardevice();
+            delay(3000);
+            printf("\nSorry, you lose, the word was: %s\n", guessWords[level][randomIndex]);
+            break;
+        } else {
+            printf("\nYou pass onto the next level!\n");
+            numLives = 6;
+            cleardevice();
+            level++;
+        }
+    }
+
+    if (level == NUM_LEVELS) {
+        printf("\nCongratulations! You completed all levels!\n");
+    }
+
+    return 0;
+}
